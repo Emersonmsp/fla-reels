@@ -150,16 +150,29 @@ def main():
     base = {'quadro': quadro, 'editoria': d.get('editoria') or 'Notícia'}
     cenas = [(cartao(dict(base, tipo='intro'), os.path.join(pasta, 'c_intro.png')), INTRO)]
     arte = baixar(d['arte'], os.path.join(pasta, 'c_arte.jpg')) if d.get('arte') else None
-    meio = max(2.0, t_perg - INTRO)
+    # Cortes presos à fala: a arte fica com ~30% das palavras do roteiro e cada cartão com uma fatia igual do resto,
+    # e o corte cai no começo de uma palavra (o cartão aparece quando a voz chega naquele ponto).
+    n_rot = min(len(roteiro.split()), len(palavras))
+    ini = next((i for i, p in enumerate(palavras[:n_rot]) if p[0] >= INTRO - 0.2), 0)
+    fatias = (['arte'] if arte else []) + list(range(len(cartoes)))
+    pesos = [0.3] + [0.7 / len(cartoes)] * len(cartoes) if arte and cartoes else [1 / len(fatias)] * len(fatias) if fatias else []
+    cortes, acum = [INTRO], 0.0
+    for pz in pesos[:-1]:
+        acum += pz
+        k = min(n_rot - 1, ini + max(1, round((n_rot - ini) * acum)))
+        cortes.append(max(cortes[-1] + 1.5, palavras[k][0]))
+    cortes.append(max(cortes[-1] + 1.5, t_perg))
+    t_perg = cortes[-1]
     janela_arte = (0, 0)
-    if arte:
-        t_arte = meio * (0.34 if cartoes else 1.0)
-        cenas.append((arte, t_arte))
-        janela_arte = (INTRO, INTRO + t_arte)
-        meio -= t_arte
-    for i, txt in enumerate(cartoes):
-        png = cartao(dict(base, tipo='fato', texto=txt, passo=i + 1, total=len(cartoes)), os.path.join(pasta, f'c_fato{i}.png'))
-        cenas.append((png, meio / len(cartoes)))
+    for j, f in enumerate(fatias):
+        dur = cortes[j + 1] - cortes[j]
+        if f == 'arte':
+            cenas.append((arte, dur))
+            janela_arte = (cortes[j], cortes[j + 1])
+        else:
+            png = cartao(dict(base, tipo='fato', texto=cartoes[f], passo=f + 1, total=len(cartoes)), os.path.join(pasta, f'c_fato{f}.png'))
+            cenas.append((png, dur))
+    total = max(total, t_perg + 2.5)
     if not arte and not cartoes:
         cenas[0] = (cenas[0][0], t_perg)
     cenas.append((cartao(dict(base, tipo='pergunta', texto=pergunta.replace('E aí, Nação?', '').strip() or pergunta),
