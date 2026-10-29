@@ -1,0 +1,35 @@
+# Artes do Fla Manchete (feed 1080x1350 e story 1080x1920), templates aprovados pelo Emerson em 29/10/2026.
+# Disparado pelo robô (Apps Script) com repository_dispatch tipo "arte". A imagem entra no release "artes"
+# como arte-<Nº>-<modelo>.jpg; o robô baixa, salva no Drive e manda pro grupo APROVA MENGÃO.
+name: arte
+on:
+  repository_dispatch:
+    types: [arte]
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: JSON de teste
+        required: true
+permissions:
+  contents: write
+concurrency:
+  group: arte-${{ github.event.client_payload.n || github.run_id }}-${{ github.event.client_payload.modelo || 'x' }}
+jobs:
+  arte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependências
+        run: pip install -q pillow
+      - name: Gerar arte
+        env:
+          PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJSON(github.event.client_payload) || inputs.payload }}
+          SAIDA: trabalho
+        run: python arte.py
+      - name: Publicar no release "artes"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view artes > /dev/null 2>&1 || gh release create artes --title "Artes dos posts" --notes "Artes automáticas do robô Fla Manchete (arte-<Nº>-<modelo>.jpg)"
+          gh release upload artes trabalho/arte-*.jpg --clobber

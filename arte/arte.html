@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Arte Fla Manchete</title>
+<!--
+  Artes do Fla Manchete, preenchidas pela URL (mesmo esquema do arte.html do JBR):
+    arte.html?modelo=URG|NOT|MER|SNOT|SURG&titulo=<texto com *destaque*>&editoria=Treino&fonte=ge&data=29 OUT 2026
+  Só no MER (Mercado Fla): &selo=CONFIRMADO|NEGOCIACAO|RUMOR&jogador=<nome>&posicao=<posição · clube atual>
+  - titulo: o trecho entre *asteriscos* sai sobre a faixa vermelha (como o MANCHETE do logo)
+  - URG/NOT/MER = feed 1080x1350 · SNOT/SURG = story 1080x1920
+  - foto (opcional, NOT/MER/SNOT): foto do jogador com licença (Wikimedia; reserva: foto oficial do clube) + &credito=<autor/licença> + &foco=<% vertical, padrão 20>
+    Sem foto, a arte sai tipográfica (o Prompt Mestre proíbe foto de veículo).
+  O GitHub Actions abre esta página no Chrome sem tela e salva o PNG do elemento #arte.
+-->
+<style>
+  @font-face{font-family:'Archivo';src:url('../fontes/Archivo-Italic.ttf') format('truetype');font-style:italic;font-weight:100 900;font-stretch:62% 125%;font-display:block}
+  @font-face{font-family:'Archivo';src:url('../fontes/Archivo.ttf') format('truetype');font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:block}
+
+  :root{
+    --verm:#D9222A; --verm-esc:#9E1219; --preto:#0B0B0B; --branco:#F4F4F4; --cinza:#1F1F1F;
+    --texto-2:#F4F4F4B8;
+    --ok:#1E9E57; --neg:#F2C230; --rumor:#8C8C8C;
+  }
+  html,body{margin:0;padding:0;background:#3a3a3a}
+  *{box-sizing:border-box}
+  ::selection{background:var(--verm);color:var(--branco)}
+
+  #arte{position:relative;overflow:hidden;width:1080px;height:1350px;background:var(--preto);color:var(--branco);
+    font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased}
+  #arte.story{height:1920px}
+
+  /* bandeira: as 3 faixas onduladas do logo, desenhadas em SVG */
+  .bandeira{position:absolute;pointer-events:none}
+  .bandeira{fill:var(--verm)}
+
+  /* título: itálico pesado e largo, como o FLA do logo */
+  .tit{margin:0;font-style:italic;font-weight:900;font-stretch:112%;text-transform:uppercase;line-height:.94;letter-spacing:-.012em;text-wrap:balance}
+  .tit em{font-style:italic;background:var(--verm);color:var(--branco);padding:.02em .16em .04em;margin:0 -.06em;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;box-shadow:0 .08em .22em rgba(0,0,0,.35)}
+  .caixa{position:absolute;display:flex;overflow:hidden}
+
+  /* faixa vermelha inclinada (a mesma do MANCHETE) */
+  .faixa{position:absolute;background:var(--verm);clip-path:polygon(0 0,100% 0,calc(100% - 28px) 100%,0 100%)}
+  .rotulo{font-style:italic;font-weight:900;font-stretch:118%;text-transform:uppercase;color:var(--branco);line-height:1;letter-spacing:.01em}
+
+  /* rodapé */
+  .rod{position:absolute;left:72px;right:72px;bottom:56px;height:92px;display:flex;align-items:flex-end;justify-content:space-between}
+  .rod img{height:92px;display:block}
+  .meta{text-align:right;font-weight:700;font-stretch:118%;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--texto-2);line-height:1.5}
+  .meta b{color:var(--branco);font-weight:800}
+  .meta .cred{font-size:18px;letter-spacing:.1em}
+  .com-foto .rod{height:110px}
+  .linha{position:absolute;left:0;right:0;bottom:0;height:12px;background:var(--verm)}
+
+  /* ---------- URG: FLA URGENTE (feed) ---------- */
+  .URG .faixa{left:0;top:96px;width:800px;height:118px;display:flex;align-items:center;gap:26px;padding-left:72px}
+  .URG .faixa .rotulo{font-size:68px}
+  .sinal{width:58px;height:58px;flex:none}
+  .URG .bandeira{right:-170px;top:250px;width:760px;opacity:.13}
+  .URG .caixa{left:72px;right:72px;top:300px;bottom:210px;align-items:center}
+  .URG .tit{font-size:118px}
+
+  /* ---------- NOT: notícia comum (feed) ---------- */
+  .NOT{background:var(--cinza)}
+  .NOT .palco{position:absolute;left:0;top:0;width:100%;height:560px;background:var(--preto);overflow:hidden}
+  .NOT .palco .bandeira{left:150px;top:44px;width:1080px}
+  .NOT .palco .eco{position:absolute;left:52px;bottom:-34px;font-style:italic;font-weight:900;font-stretch:125%;font-size:250px;line-height:1;
+    text-transform:uppercase;color:transparent;-webkit-text-stroke:3px rgba(244,244,244,.16);white-space:nowrap}
+  .NOT .faixa{left:0;top:510px;height:100px;padding:0 64px 0 72px;display:flex;align-items:center}
+  .NOT .faixa .rotulo{font-size:48px;letter-spacing:.04em}
+  .NOT .caixa{left:72px;right:72px;top:668px;bottom:204px;align-items:flex-start}
+  .NOT .tit{font-size:100px}
+
+  /* foto do jogador (só com licença) */
+  .foto{position:absolute;background-size:cover;background-repeat:no-repeat;filter:saturate(1.05) contrast(1.05)}
+  .NOT .palco .foto,.SNOT .palco .foto{inset:0}
+  .palco .sombra{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,11,11,.35) 0%,rgba(11,11,11,0) 30%,rgba(11,11,11,0) 62%,rgba(11,11,11,.85) 100%)}
+  .palco.com-foto .bandeira{left:auto;right:-90px;top:-40px;width:440px}
+  .SNOT .palco.com-foto .bandeira{right:-120px;top:150px;width:560px}
+
+  /* ---------- MER: Mercado Fla (feed) ---------- */
+  .MER .topo{position:absolute;left:72px;right:72px;top:84px;display:flex;align-items:center;justify-content:space-between}
+  .MER .topo .rotulo{font-size:48px;display:flex;align-items:center;gap:20px}
+  .MER .topo .rotulo span{color:var(--verm)}
+  .setas{width:64px;height:44px}
+  .MER .bandeira{left:-260px;bottom:-120px;width:900px;opacity:.1;transform:scaleX(-1)}
+  .selo{font-style:italic;font-weight:900;font-stretch:112%;font-size:30px;letter-spacing:.06em;padding:14px 26px 13px;line-height:1;text-transform:uppercase;
+    clip-path:polygon(14px 0,100% 0,calc(100% - 14px) 100%,0 100%)}
+  .selo.CONFIRMADO{background:var(--ok);color:#fff}
+  .selo.NEGOCIACAO{background:var(--neg);color:var(--preto)}
+  .selo.RUMOR{background:repeating-linear-gradient(-45deg,#9a9a9a 0 14px,#7e7e7e 14px 28px);color:var(--preto)}
+  .MER .jog{position:absolute;left:72px;right:72px;top:212px}
+  .MER .jog .nome{margin:0;font-style:italic;font-weight:900;font-stretch:125%;text-transform:uppercase;line-height:.88;letter-spacing:-.02em;font-size:150px}
+  .MER .jog .pos{margin-top:22px;font-weight:700;font-stretch:118%;font-size:28px;letter-spacing:.16em;text-transform:uppercase;color:var(--texto-2)}
+  .MER .foto{right:0;top:0;width:620px;height:740px}
+  .MER .foto-sombra{position:absolute;right:0;top:0;width:640px;height:742px;
+    background:linear-gradient(90deg,var(--preto) 0%,rgba(11,11,11,.72) 26%,rgba(11,11,11,.1) 60%,rgba(11,11,11,0) 100%),
+               linear-gradient(0deg,var(--preto) 0%,rgba(11,11,11,0) 30%),linear-gradient(180deg,rgba(11,11,11,.9) 0%,rgba(11,11,11,0) 22%)}
+  .MER.com-foto .pos{max-width:560px;text-shadow:0 2px 14px rgba(0,0,0,.8)}
+  .MER .topo,.MER .jog,.MER .termo,.MER .caixa{z-index:2}
+  .MER.com-foto .nome{text-shadow:0 4px 30px rgba(0,0,0,.6)}
+  .termo{position:absolute;left:72px;right:72px;top:620px}
+  .termo .trilho{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .termo .passo{height:20px;background:#2A2A2A;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+  .termo .passo.on{background:var(--cor-termo)}
+  .termo .nomes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;font-weight:800;font-stretch:118%;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:#6E6E6E}
+  .termo .nomes .on{color:var(--branco)}
+  .MER .caixa{left:72px;right:72px;top:748px;bottom:210px;align-items:flex-start}
+  .MER .tit{font-size:76px;line-height:.98}
+
+  /* ---------- Story ---------- */
+  .story .bandeira{opacity:1}
+  .SNOT .palco{position:absolute;left:0;top:0;width:100%;height:900px;overflow:hidden}
+  .SNOT .palco .bandeira{left:40px;top:260px;width:1300px}
+  .SNOT .faixa{left:0;top:860px;height:110px;padding:0 64px 0 80px;display:flex;align-items:center}
+  .SNOT .faixa .rotulo{font-size:52px;letter-spacing:.04em}
+  .SNOT .caixa{left:80px;right:80px;top:1030px;bottom:420px;align-items:flex-start}
+  .SNOT .tit{font-size:112px}
+  .chamada{position:absolute;left:80px;right:80px;bottom:300px;font-weight:800;font-stretch:118%;font-size:30px;letter-spacing:.12em;text-transform:uppercase;color:var(--texto-2)}
+  .story .rod{bottom:170px;left:80px;right:80px}
+  .story .rod img{height:110px}
+  .story .linha{bottom:0;height:16px}
+
+  .SURG .faixa{left:0;top:250px;width:880px;height:132px;display:flex;align-items:center;gap:28px;padding-left:80px}
+  .SURG .faixa .rotulo{font-size:76px}
+  .SURG .bandeira{right:-260px;top:560px;width:1000px;opacity:.14}
+  .SURG .caixa{left:80px;right:80px;top:460px;bottom:440px;align-items:center}
+  .SURG .tit{font-size:140px}
+</style>
+</head>
+<body>
+<div id="arte"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- 3 faixas da bandeira do logo: mesma onda, mesma inclinação -->
+    <symbol id="ondas" viewBox="0 0 1000 560">
+      <path d="M40 40 C220 -10 380 70 560 40 S860 -20 1000 20 L990 130 C840 100 700 170 540 150 S220 120 30 170 Z"/>
+      <path d="M30 230 C210 180 370 260 550 230 S850 170 990 210 L980 320 C830 290 690 360 530 340 S210 310 20 360 Z"/>
+      <path d="M20 420 C200 370 360 450 540 420 S840 360 980 400 L970 510 C820 480 680 550 520 530 S200 500 10 550 Z"/>
+    </symbol>
+    <symbol id="sinal" viewBox="0 0 58 58">
+      <circle cx="29" cy="29" r="7" fill="#F4F4F4"/>
+      <path d="M17 17a17 17 0 0 0 0 24M41 17a17 17 0 0 1 0 24M9 9a28 28 0 0 0 0 40M49 9a28 28 0 0 1 0 40" fill="none" stroke="#F4F4F4" stroke-width="5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="setas" viewBox="0 0 64 44">
+      <path d="M4 14h44M36 3l12 11-12 11M60 30H16M28 19 16 30l12 11" fill="none" stroke="#D9222A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+const q = new URLSearchParams(location.search);
+const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+const hoje = new Date();
+const P = {
+  modelo: (q.get('modelo') || 'NOT').toUpperCase(),
+  titulo: q.get('titulo') || 'Flamengo encerra preparação e *Filipe Luís* esboça time para o clássico',
+  editoria: q.get('editoria') || 'Treino',
+  fonte: q.get('fonte') || 'ge',
+  data: q.get('data') || (hoje.getDate() + ' ' + MESES[hoje.getMonth()] + ' ' + hoje.getFullYear()),
+  selo: (q.get('selo') || 'RUMOR').toUpperCase(),
+  jogador: q.get('jogador') || '',
+  posicao: q.get('posicao') || '',
+  foto: q.get('foto') || '',
+  credito: q.get('credito') || '',
+  foco: q.get('foco') || '20'
+};
+const SELO = { CONFIRMADO: 'Confirmado', NEGOCIACAO: 'Em negociação', RUMOR: 'Rumor' };
+const COR_SELO = { CONFIRMADO: 'var(--ok)', NEGOCIACAO: 'var(--neg)', RUMOR: 'var(--rumor)' };
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const titulo = esc(P.titulo).replace(/\*([^*]+)\*/g, '<em>$1</em>');
+const ondas = (cls = '') => `<svg class="bandeira ${cls}" viewBox="0 0 1000 560" aria-hidden="true"><use href="#ondas"/></svg>`;
+const foto = P.foto ? `<div class="foto" style="background-image:url('${encodeURI(P.foto)}');background-position:50% ${parseFloat(P.foco) || 20}%"></div>` : '';
+const rodape = `<div class="rod"><img src="../Logo/logo-v4-compacto.png" alt="Fla Manchete">
+  <div class="meta">Fonte: <b>${esc(P.fonte)}</b><br>${P.credito ? '<span class="cred">Foto: ' + esc(P.credito) + '</span><br>' : ''}${esc(P.data)}</div></div><div class="linha"></div>`;
+
+const M = {
+  URG: () => `
+    <div class="faixa"><svg class="sinal"><use href="#sinal"/></svg><span class="rotulo">Fla Urgente</span></div>
+    ${ondas()}
+    <div class="caixa"><h1 class="tit">${titulo}</h1></div>${rodape}`,
+  NOT: () => `
+    <div class="palco${foto ? ' com-foto' : ''}">${foto ? foto + '<div class="sombra"></div>' : ondas()}</div>
+    <div class="faixa"><span class="rotulo">${esc(P.editoria)}</span></div>
+    <div class="caixa"><h1 class="tit">${titulo}</h1></div>${rodape}`,
+  MER: () => {
+    const passos = ['RUMOR', 'NEGOCIACAO', 'CONFIRMADO'], i = passos.indexOf(P.selo);
+    return `
+    <div class="topo"><span class="rotulo"><svg class="setas"><use href="#setas"/></svg>Mercado <span>Fla</span></span>
+      <span class="selo ${P.selo}">${SELO[P.selo] || P.selo}</span></div>
+    ${foto ? foto + '<div class="foto-sombra"></div>' : ondas()}
+    <div class="jog"><h2 class="nome">${esc(P.jogador)}</h2>${P.posicao ? `<div class="pos">${esc(P.posicao)}</div>` : ''}</div>
+    <div class="termo" style="--cor-termo:${COR_SELO[P.selo] || 'var(--verm)'}">
+      <div class="trilho">${passos.map((p, k) => `<div class="passo ${k <= i ? 'on' : ''}"></div>`).join('')}</div>
+      <div class="nomes">${passos.map((p, k) => `<span class="${k === i ? 'on' : ''}">${SELO[p]}</span>`).join('')}</div></div>
+    <div class="caixa"><h1 class="tit">${titulo}</h1></div>${rodape}`;
+  },
+  SNOT: () => `
+    <div class="palco${foto ? ' com-foto' : ''}">${foto ? foto + '<div class="sombra"></div>' : ondas()}</div>
+    <div class="faixa"><span class="rotulo">${esc(P.editoria)}</span></div>
+    <div class="caixa"><h1 class="tit">${titulo}</h1></div>
+    <div class="chamada">Notícia completa no perfil</div>${rodape}`,
+  SURG: () => `
+    <div class="faixa"><svg class="sinal"><use href="#sinal"/></svg><span class="rotulo">Fla Urgente</span></div>
+    ${ondas()}
+    <div class="caixa"><h1 class="tit">${titulo}</h1></div>
+    <div class="chamada">Detalhes no perfil</div>${rodape}`
+};
+
+const arte = document.getElementById('arte');
+arte.className = P.modelo + (P.modelo[0] === 'S' ? ' story' : '') + (foto ? ' com-foto' : '');
+arte.innerHTML = (M[P.modelo] || M.NOT)();
+
+// título e nome do jogador diminuem até caber na caixa
+function caber(el, caixa, min) {
+  let tam = parseFloat(getComputedStyle(el).fontSize);
+  while (tam > min && (el.scrollHeight > caixa.clientHeight || el.scrollWidth > caixa.clientWidth)) {
+    tam -= 2; el.style.fontSize = tam + 'px';
+  }
+}
+document.fonts.ready.then(() => {
+  const tit = arte.querySelector('.tit'), cx = arte.querySelector('.caixa');
+  if (tit && cx) caber(tit, cx, 48);
+  const eco = arte.querySelector('.eco');
+  if (eco) { let t = 250; while (t > 80 && eco.scrollWidth > 1000) { t -= 6; eco.style.fontSize = t + 'px'; } }
+  const nome = arte.querySelector('.nome');
+  if (nome) { let t = 150; while (t > 70 && (nome.scrollWidth > nome.clientWidth || nome.offsetHeight > 330)) { t -= 4; nome.style.fontSize = t + 'px'; } }
+  document.body.setAttribute('data-pronto', '1');
+});
+</script>
+</body>
+</html>
