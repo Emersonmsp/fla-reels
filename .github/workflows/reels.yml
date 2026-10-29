@@ -1,0 +1,40 @@
+# Vídeo vertical do Fla Manchete (formatos A Fla Urgente / B Mercado Fla / notícia), sem apresentador.
+# Disparado pelo robô (Apps Script) com repository_dispatch tipo "reels". Sai como release "reels-<Nº>" (reels.mp4 + capa.jpg);
+# o robô busca o release e publica no Reels do Instagram e no Facebook (e, na fase do YouTube/TikTok, lá também).
+name: reels
+on:
+  repository_dispatch:
+    types: [reels]
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: JSON de teste
+        required: true
+permissions:
+  contents: write
+jobs:
+  reels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependências
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          pip install -q edge-tts==7.3.1 pillow requests
+      - name: Gerar vídeo
+        env:
+          PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJSON(github.event.client_payload) || inputs.payload }}
+          SAIDA: trabalho
+        run: python gerar.py
+      - name: Publicar release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          N: ${{ github.event.client_payload.n || fromJSON(inputs.payload).n }}
+        run: |
+          gh release delete "reels-$N" --yes --cleanup-tag 2>/dev/null || true
+          ARQ="trabalho/reels.mp4"; [ -f trabalho/capa.jpg ] && ARQ="$ARQ trabalho/capa.jpg"
+          gh release create "reels-$N" $ARQ --title "Vídeo Nº $N" --notes "Vídeo automático do Fla Manchete Nº $N"

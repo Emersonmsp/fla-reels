@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cartões do vídeo Fla Manchete</title>
+<!--
+  Cartões 1080x1920 dos vídeos do Fla Manchete (mesmo visual das artes aprovadas em 29/10/2026), preenchidos pela URL:
+    video.html?tipo=intro&quadro=URG|MER|NOT
+    video.html?tipo=fato&quadro=...&texto=<frase com *destaque*>&passo=1&total=3
+    video.html?tipo=pergunta&texto=<pergunta>
+    video.html?tipo=capa&quadro=...&texto=<3 a 6 palavras com *destaque*>&selo=RUMOR   (capa do Short)
+  O gerar.py abre cada cartão no Chrome sem tela e monta o vídeo com a narração e a legenda por cima.
+  A legenda entra na faixa de 1390 a 1620 px: nenhum cartão põe texto ali.
+-->
+<style>
+  @font-face{font-family:'Archivo';src:url('../fontes/Archivo-Italic.ttf') format('truetype');font-style:italic;font-weight:100 900;font-stretch:62% 125%;font-display:block}
+  @font-face{font-family:'Archivo';src:url('../fontes/Archivo.ttf') format('truetype');font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:block}
+  :root{--verm:#D9222A;--preto:#0B0B0B;--branco:#F4F4F4;--cinza:#1F1F1F;--texto-2:#F4F4F4B8;--ok:#1E9E57;--neg:#F2C230}
+  html,body{margin:0;padding:0;background:#3a3a3a}
+  *{box-sizing:border-box}
+  #c{position:relative;overflow:hidden;width:1080px;height:1920px;background:var(--preto);color:var(--branco);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased}
+  .bandeira{position:absolute;fill:var(--verm);pointer-events:none}
+  .faixa{position:absolute;left:0;background:var(--verm);clip-path:polygon(0 0,100% 0,calc(100% - 30px) 100%,0 100%);display:flex;align-items:center;gap:26px;padding:0 70px 0 80px}
+  .rotulo{font-style:italic;font-weight:900;font-stretch:118%;text-transform:uppercase;line-height:1;letter-spacing:.01em;white-space:nowrap}
+  .tit{margin:0;font-style:italic;font-weight:900;font-stretch:112%;text-transform:uppercase;line-height:.95;letter-spacing:-.012em;text-wrap:balance}
+  .tit em{font-style:italic;background:var(--verm);padding:.02em .16em .04em;margin:0 -.06em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .logo{position:absolute;left:80px;bottom:150px;height:120px}
+  .arroba{position:absolute;right:80px;bottom:170px;font-weight:800;font-stretch:118%;font-size:30px;letter-spacing:.12em;color:var(--texto-2)}
+  .sinal{width:64px;height:64px;flex:none}
+
+  /* intro: vinheta com o quadro */
+  .intro .bandeira{left:-40px;top:420px;width:1160px}
+  .intro .logo-grande{position:absolute;left:50%;top:1180px;transform:translateX(-50%);width:640px}
+  .intro .faixa{top:220px;height:150px}
+  .intro .faixa .rotulo{font-size:84px}
+
+  /* fato: um pedaço do resumo por cartão */
+  .fato .faixa{top:200px;height:110px}
+  .fato .faixa .rotulo{font-size:50px}
+  .fato .bandeira{right:-300px;top:1500px;width:820px;opacity:.16}
+  .fato .marcador{position:absolute;left:80px;top:400px;display:flex;gap:12px}
+  .fato .marcador i{display:block;width:90px;height:14px;background:#333;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+  .fato .marcador i.on{background:var(--verm)}
+  .fato .caixa{position:absolute;left:80px;right:80px;top:500px;height:860px;display:flex;align-items:center;overflow:hidden}
+  .fato .tit{font-size:124px}
+
+  /* pergunta final */
+  .pergunta .ei{position:absolute;left:80px;right:80px;top:260px;margin:0;font-style:italic;font-weight:900;font-stretch:125%;font-size:150px;line-height:.9;text-transform:uppercase}
+  .pergunta .ei span{color:var(--verm)}
+  .pergunta .caixa{position:absolute;left:80px;right:80px;top:620px;height:600px;display:flex;align-items:center;overflow:hidden}
+  .pergunta .tit{font-size:96px;font-stretch:108%}
+  .pergunta .coment{position:absolute;left:80px;top:1260px;font-weight:900;font-style:italic;font-stretch:118%;font-size:44px;text-transform:uppercase;display:flex;align-items:center;gap:20px}
+  .pergunta .coment svg{width:52px;height:52px}
+  .pergunta .bandeira{right:-340px;top:-60px;width:760px;opacity:.14}
+
+  /* capa do Short */
+  .capa .bandeira{left:-60px;top:120px;width:1200px}
+  .capa .faixa{top:900px;height:120px}
+  .capa .faixa .rotulo{font-size:60px}
+  .capa .caixa{position:absolute;left:80px;right:80px;top:1060px;height:560px;display:flex;align-items:flex-start;overflow:hidden}
+  .capa .tit{font-size:170px;line-height:.9}
+  .capa .selo{position:absolute;right:80px;top:910px;font-style:italic;font-weight:900;font-stretch:112%;font-size:40px;padding:16px 28px;clip-path:polygon(14px 0,100% 0,calc(100% - 14px) 100%,0 100%);text-transform:uppercase}
+  .selo.CONFIRMADO{background:var(--ok);color:#fff}
+  .selo.NEGOCIACAO{background:var(--neg);color:var(--preto)}
+  .selo.RUMOR{background:repeating-linear-gradient(-45deg,#9a9a9a 0 14px,#7e7e7e 14px 28px);color:var(--preto)}
+</style>
+</head>
+<body>
+<div id="c"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ondas" viewBox="0 0 1000 560">
+      <path d="M40 40 C220 -10 380 70 560 40 S860 -20 1000 20 L990 130 C840 100 700 170 540 150 S220 120 30 170 Z"/>
+      <path d="M30 230 C210 180 370 260 550 230 S850 170 990 210 L980 320 C830 290 690 360 530 340 S210 310 20 360 Z"/>
+      <path d="M20 420 C200 370 360 450 540 420 S840 360 980 400 L970 510 C820 480 680 550 520 530 S200 500 10 550 Z"/>
+    </symbol>
+    <symbol id="sinal" viewBox="0 0 58 58">
+      <circle cx="29" cy="29" r="7" fill="#F4F4F4"/>
+      <path d="M17 17a17 17 0 0 0 0 24M41 17a17 17 0 0 1 0 24M9 9a28 28 0 0 0 0 40M49 9a28 28 0 0 1 0 40" fill="none" stroke="#F4F4F4" stroke-width="5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="setas" viewBox="0 0 64 44">
+      <path d="M4 14h44M36 3l12 11-12 11M60 30H16M28 19 16 30l12 11" fill="none" stroke="#F4F4F4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="balao" viewBox="0 0 52 52">
+      <path d="M6 8h40a4 4 0 0 1 4 4v22a4 4 0 0 1-4 4H22l-10 9v-9H6a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z" fill="#D9222A"/>
+    </symbol>
+  </defs>
+</svg>
+<script>
+const q = new URLSearchParams(location.search);
+const P = { tipo: q.get('tipo') || 'intro', quadro: (q.get('quadro') || 'NOT').toUpperCase(), texto: q.get('texto') || '',
+  passo: Number(q.get('passo') || 1), total: Number(q.get('total') || 3), selo: (q.get('selo') || '').toUpperCase(), editoria: q.get('editoria') || 'Notícia' };
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const marcado = t => esc(t).replace(/\*([^*]+)\*/g, '<em>$1</em>');
+const ondas = () => '<svg class="bandeira" viewBox="0 0 1000 560" aria-hidden="true"><use href="#ondas"/></svg>';
+const QUADRO = {
+  URG: '<svg class="sinal"><use href="#sinal"/></svg><span class="rotulo">Fla Urgente</span>',
+  MER: '<svg class="sinal" viewBox="0 0 64 44"><use href="#setas"/></svg><span class="rotulo">Mercado Fla</span>',
+  NOT: '<span class="rotulo">' + esc(P.editoria) + '</span>'
+};
+const SELO = { CONFIRMADO: 'Confirmado', NEGOCIACAO: 'Em negociação', RUMOR: 'Rumor' };
+const logo = '<img class="logo" src="../Logo/logo-v4-compacto.png" alt="Fla Manchete"><div class="arroba">@fla_manchete</div>';
+const T = {
+  intro: () => `<div class="faixa">${QUADRO[P.quadro] || QUADRO.NOT}</div>${ondas()}<img class="logo-grande" src="../Logo/logo-v4-transparente.png" alt="Fla Manchete">`,
+  fato: () => `<div class="faixa">${QUADRO[P.quadro] || QUADRO.NOT}</div>
+    <div class="marcador">${Array.from({ length: P.total }, (x, i) => `<i class="${i < P.passo ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="caixa"><h1 class="tit">${marcado(P.texto)}</h1></div>${ondas()}${logo}`,
+  pergunta: () => `<h2 class="ei">E aí,<br><span>Nação?</span></h2><div class="caixa"><h1 class="tit">${marcado(P.texto)}</h1></div>
+    <div class="coment"><svg><use href="#balao"/></svg>Comenta aí</div>${ondas()}${logo}`,
+  capa: () => `${ondas()}<div class="faixa">${QUADRO[P.quadro] || QUADRO.NOT}</div>${P.selo && SELO[P.selo] ? `<div class="selo ${P.selo}">${SELO[P.selo]}</div>` : ''}
+    <div class="caixa"><h1 class="tit">${marcado(P.texto)}</h1></div>${logo}`
+};
+const c = document.getElementById('c');
+c.className = P.tipo;
+c.innerHTML = (T[P.tipo] || T.intro)();
+document.fonts.ready.then(() => {
+  const tit = c.querySelector('.tit'), cx = c.querySelector('.caixa');
+  if (tit && cx) { let t = parseFloat(getComputedStyle(tit).fontSize); while (t > 50 && (tit.scrollHeight > cx.clientHeight || tit.scrollWidth > cx.clientWidth)) { t -= 2; tit.style.fontSize = t + 'px'; } }
+  document.body.setAttribute('data-pronto', '1');
+});
+</script>
+</body>
+</html>
