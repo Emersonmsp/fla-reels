@@ -1,7 +1,7 @@
 """Artes do Fla Manchete (feed 1080x1350 e story 1080x1920), a partir de arte/arte.html.
 
 Payload (JSON em PAYLOAD): n, modelo (URG | NOT | MER | SNOT | SURG), titulo (com *destaque*), editoria, data, fonte,
-e dentro de "x" (o GitHub recusa client_payload com mais de 10 campos): selo, jogador, posicao, foto (url), credito, foco.
+e dentro de "x" (o GitHub recusa client_payload com mais de 10 campos): selo, fina, foto (url), credito, foco.
 Sai em SAIDA/arte-<n>-<modelo>.jpg. Usa o Chrome que já vem no runner do GitHub.
 """
 import json
@@ -15,7 +15,7 @@ from PIL import Image
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 STORY = {'SNOT', 'SURG'}
-CAMPOS = ('titulo', 'editoria', 'data', 'fonte', 'selo', 'jogador', 'posicao', 'credito', 'foco')
+CAMPOS = ('titulo', 'fina', 'editoria', 'data', 'fonte', 'selo', 'n', 'credito', 'foco')
 
 
 def baixar_foto(url, destino):
@@ -52,10 +52,10 @@ def main():
     params = {'modelo': modelo}
     params.update({k: str(p[k]) for k in CAMPOS if p.get(k) not in (None, '')})
     foto = os.path.join(AQUI, 'arte', 'foto.jpg')
-    if p.get('foto') and baixar_foto(p['foto'], foto):
-        params['foto'] = 'foto.jpg'
-    else:
-        params.pop('credito', None)  # sem foto, sem crédito de foto
+    # Regra do Emerson (01/11): sem foto não existe arte; o robô não recebe a imagem e a pauta não vai pro grupo.
+    if not (p.get('foto') and baixar_foto(p['foto'], foto)):
+        raise SystemExit('sem foto: arte não gerada')
+    params['foto'] = 'foto.jpg'
 
     alt = 1920 if modelo in STORY else 1350
     renderizar(os.path.join(AQUI, 'arte', 'arte.html'), params, 1080, alt, os.path.join(saida, f'arte-{n}-{modelo}.jpg'))
