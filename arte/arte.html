@@ -49,8 +49,10 @@
   .cliche .cred{position:absolute;right:0;bottom:0;background:var(--tarja);color:#F4F4F4;padding:9px 18px;font-weight:500;font-size:23px}
 
   /* carimbo de status da informação */
-  .carimbo{position:absolute;right:0;top:12px;z-index:3;padding:13px 24px 10px;border:7px solid currentColor;transform:rotate(-5deg);font-family:'Archivo';font-stretch:75%;font-weight:900;
-    font-size:58px;letter-spacing:.02em;line-height:1;text-transform:uppercase;background:var(--papel)}
+  /* fica na linha do chapéu, que abre espaço pra ele não encostar na manchete */
+  .carimbo{position:absolute;right:6px;top:16px;z-index:3;padding:9px 18px 7px;border:5px solid currentColor;transform:rotate(-3deg);font-family:'Archivo';font-stretch:75%;font-weight:900;
+    font-size:40px;letter-spacing:.02em;line-height:1;text-transform:uppercase;background:var(--papel)}
+  .carimbo ~ .caixa{margin-top:22px}
   .carimbo.RUMOR{color:var(--tinta)}
   .carimbo.NEGOCIACAO{color:#9A5B00}
   .carimbo.CONFIRMADO{color:#0F7A41}
