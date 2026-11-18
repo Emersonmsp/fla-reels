@@ -1,0 +1,28 @@
+# Limpeza do release "artes": o GitHub aceita no máximo 1.000 arquivos por release.
+# Em 14/11/2026 o release lotou e o robô parou de publicar por 4 dias. O robô já salva cada arte
+# no Drive, então aqui só fica a passagem: apaga as artes com mais de 3 dias, 1x por dia (e à mão se precisar).
+name: limpar-artes
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  limpar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Apagar artes com mais de 3 dias
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          rel=$(gh api repos/$REPO/releases/tags/artes --jq .id) || exit 0
+          lim=$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          ids=$(gh api repos/$REPO/releases/$rel/assets --paginate --jq ".[] | select(.created_at < \"$lim\") | .id")
+          n=0
+          for id in $ids; do gh api -X DELETE repos/$REPO/releases/assets/$id > /dev/null && n=$((n+1)); done
+          total=$(gh api repos/$REPO/releases/$rel/assets --paginate --jq '.[].id' | wc -l)
+          echo "Apagadas: $n · ficaram: $total"
