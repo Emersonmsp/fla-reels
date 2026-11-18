@@ -15,7 +15,7 @@ permissions:
 jobs:
   reels:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,12 +26,12 @@ jobs:
         timeout-minutes: 3
       - name: Dependências
         timeout-minutes: 3
-        run: pip install -q edge-tts==7.3.1 pillow requests
+        run: pip install -q edge-tts==7.3.1 pillow requests numpy
       - name: Gerar vídeo
         env:
           PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJSON(github.event.client_payload) || inputs.payload }}
           SAIDA: trabalho
-        run: python gerar.py
+        run: python video2.py
       - name: Publicar release
         env:
           GH_TOKEN: ${{ github.token }}
