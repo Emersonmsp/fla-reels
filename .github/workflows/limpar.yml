@@ -26,3 +26,12 @@ jobs:
           for id in $ids; do gh api -X DELETE repos/$REPO/releases/assets/$id > /dev/null && n=$((n+1)); done
           total=$(gh api repos/$REPO/releases/$rel/assets --paginate --jq '.[].id' | wc -l)
           echo "Apagadas: $n · ficaram: $total"
+      - name: Apagar vídeos (releases reels-*) com mais de 7 dias
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          lim=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          for t in $(gh api repos/$REPO/releases --paginate --jq ".[] | select(.tag_name | startswith(\"reels-\")) | select(.created_at < \"$lim\") | .tag_name"); do
+            gh release delete "$t" --yes --cleanup-tag -R $REPO && echo "apagado $t"
+          done

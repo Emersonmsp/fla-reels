@@ -150,6 +150,8 @@ def main():
     base = {'quadro': quadro, 'editoria': d.get('editoria') or 'Notícia'}
     cenas = [(cartao(dict(base, tipo='intro'), os.path.join(pasta, 'c_intro.png')), INTRO)]
     arte = baixar(d['arte'], os.path.join(pasta, 'c_arte.jpg')) if d.get('arte') else None
+    if not arte:  # regra do Emerson (01/11/2026): sem foto não publica, e a arte da notícia é onde está a foto
+        raise SystemExit('sem arte/foto da notícia: o vídeo não sai')
     # Cortes presos à fala: a arte fica com ~30% das palavras do roteiro e cada cartão com uma fatia igual do resto,
     # e o corte cai no começo de uma palavra (o cartão aparece quando a voz chega naquele ponto).
     n_rot = min(len(roteiro.split()), len(palavras))
